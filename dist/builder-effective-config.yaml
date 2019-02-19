@@ -1,0 +1,7 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.clippy.app
+productName: Clippy
+forceCodeSigning: false
+electronVersion: 2.0.8

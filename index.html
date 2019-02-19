@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Lenny's Clipboard</title>
+    </head>
+    <style>
+body{
+    position: absolute;
+    margin: 0px;
+    overflow: hidden;
+    top: 0px;
+    bottom: 0px;
+    width: 100%;
+    background-color: #993399;
+    font-family: sans-serif;
+}
+p {
+    margin: 0;
+}
+#dragBar{
+    width: 100%;
+    height: 22px;
+    -ms-overflow-style: scrollbar;
+    -webkit-app-region: drag;
+    background-color: #990099;
+}
+#items {
+    width: 30%;
+    margin-top: 25px;
+    height: auto;
+    float: left;
+    color: #CC99CC;
+}
+.item {
+    height: 40px;
+    text-align: right;
+    margin-left: 15px;
+    border-bottom: 2px solid #CC99CC;
+}
+.item :hover {
+    transition-duration: 0.2s;
+    cursor: pointer;
+    color: rgb(177, 121, 177);
+}
+#editor {
+    float: right; 
+    height: 100%;
+    width: 67%;
+    background-color: #CC339A;
+}
+textarea {
+    width: 450px;
+    height: 55px;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    background-color: #e291c7;
+    resize: none;
+    outline: none;
+    border: none;
+    font-size: 25px;
+    color: rgb(172, 41, 100);
+    margin-top: 10px;
+    margin-left: 10px;
+}
+#value {
+    height: 55%;
+    font-size: 15px;
+}
+button {
+    width: 90px;
+    height: 35px;
+    font-size: 20px;
+    margin-left: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    background-color: #993399;
+    border: none;
+    color: #CC99CC;
+}
+button:hover {
+    cursor: pointer;
+}
+#reset {
+    margin-left: 155px;
+}
+    </style>
+    <body onload="add()">
+        <div id="dragBar"></div>
+        <div id='items'>
+        </div>
+        <div id="editor">
+            <textarea id="title" maxlength="20"></textarea>
+            <textarea id="value"></textarea>
+            <button onclick="applyItem()">Apply</button>
+            <button onclick="can()">Cancel</button>
+            <button onclick="reset()" id="reset">Reset All</button>
+        </div>
+    </body>
+    <script>
+const { ipcRenderer } = require('electron')
+const Store = require('electron-store')
+const store = new Store
+let i, lastSelect;
+let title = document.getElementById('title')
+let value = document.getElementById('value')
+
+function resetAll() {
+    store.set({
+        "names":{
+            "1":"Suspition Lenny",
+            "2":"The Best Text",
+            "3":"._.",
+            "4":"Guns 'N Roses",
+            "5":"(ᴗ ͜ʖ ᴗ)",
+            "6":"Speech"
+        },
+        "1":"( ‾ ʖ̫ ‾)",
+        "2":"Cool Text",
+        "3":".-.",
+        "4":"̿̿ ̿̿ ̿̿ ̿'̿'\̵͇̿̿\з=( ͠° ͟ʖ ͡°)=ε/̵͇̿̿/'̿̿ ̿ ̿ ̿ ̿ ̿ ",
+        "5":"(ᴗ ͜ʖ ᴗ)",
+        "6":"Today we fight the good fight, we make ends meet, and make filler content like this. Today we, the developers, will make the best speech ever to fill the 'speech' button on your screen."
+    })
+}
+
+//init textareas
+title.value = 'Title'
+value.value = 'Content'
+
+//init sidebar
+function add() {
+    for (i = 0; i < 6; i++) {
+        let l = i + 1;
+        let newD = document.createElement('div')
+        newD.innerHTML = '<h3 onclick="focu('+l+')" id="'+l+'_item">'+store.get('names.'+l)+'</h3>'
+        newD.className = 'item';
+        newD.id = i
+        document.getElementById('items').appendChild(newD)
+    }
+}
+//focus function
+function focu(number) {
+    console.log('logged')
+    //change selected div
+    let div = document.getElementById(number)
+
+    //save last selection
+    lastSelect = number;
+
+    title.value = store.get('names.'+number)
+    console.log(store.get('names.'+number))
+    let valueVal = store.store[number]
+    console.log(valueVal)
+    value.value = valueVal
+}
+
+//update sidebar item
+function updateItem(itemNumber) {
+    console.log(itemNumber)
+    var div = document.getElementById(itemNumber+"_item")
+    console.log(div)
+    div.innerHTML = store.get('names.'+itemNumber)
+}
+
+//apply changes
+function applyItem() {
+    let inputValue = value.value
+    let titleValue = title.value
+    store.set(''+lastSelect+'', inputValue)
+    store.set('names.'+lastSelect, titleValue)
+    updateItem(lastSelect)
+    ipcRenderer.send('updateTray')
+}
+
+//cancel changes
+function can() {
+    title.value = 'Title'
+    value.value = 'Content'
+}
+function reset() {
+    dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Reset', 'Cancel'],
+        title: 'Confirm',
+        message: 'This is the reset button, it will reset all your clips to factory settings. This is best used if a glitch is happening.'
+    }, function (response) {
+        if (response === 0) {
+            resetAll()
+        }
+    })
+}
+    </script>
+</html
